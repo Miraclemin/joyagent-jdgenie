@@ -269,7 +269,6 @@ sh start_genie.sh
 ## 贡献和合作
 
 我们是京东CHO企业信息化团队（EI），热忱欢迎开发者加入JoyAgent-JDGenie的建设！无论是完善产品和框架、修复 bug 还是添加新特性，您的贡献都非常宝贵。如需学术引用或联系，请使用以下 BibTeX：
-
 ```bibtex
 @software{JoyAgent-JDGenie,
   author = {Agent Team at JDCHO},
@@ -281,3 +280,5 @@ sh start_genie.sh
   email = {jiashilin1@jd.com;liyang.1236@jd.com;liushangkun@jd.com;tianshaohua.1@jd.com;wangzhen449@jd.com}
 }
 ```
+欢迎沟通和联系我们
+![contact](./docs/img/contact.jpg)
