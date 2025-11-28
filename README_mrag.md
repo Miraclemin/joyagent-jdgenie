@@ -23,6 +23,8 @@
 | ![](./docs/img/mrag/gzjzz.png) <br> ![](./docs/img/mrag/example2.png) | ![](./docs/img/mrag/example3.png) <br> ![](./docs/img/mrag/example4.png) |
 
 ## 部署使用指南
+**注意: 请移步至mrag分支**
+
 📺 [部署使用指南视频](https://www.bilibili.com/video/BV1EBUYBjEmX )
 
 ## 效果先进性：DoubleBench数据集测评
