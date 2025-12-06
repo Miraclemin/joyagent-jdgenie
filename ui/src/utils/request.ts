@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { showMessage } from './utils';
+import { getToken } from './token';
 
 // 创建axios实例
 const request: AxiosInstance = axios.create({
@@ -11,6 +12,11 @@ const request: AxiosInstance = axios.create({
 // 请求拦截器
 request.interceptors.request.use(
   (config) => {
+    // 添加token到请求头
+    const token = getToken();
+    if (token) {
+      config.headers['X-Auth-Token'] = token;
+    }
     return config;
   },
   (error) => {
@@ -55,8 +61,9 @@ request.interceptors.response.use(
 
       switch (status) {
         case 401:
-          // 未授权，清除token并跳转登录
-          noAuth(resData.redirectUrl);
+          // Token验证失败
+          const errorMsg = resData?.msg || 'Token验证失败，请检查token设置';
+          message?.error(errorMsg);
           break;
         case 403:
           message?.error(error.message || '没有权限访问');

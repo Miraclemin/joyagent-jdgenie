@@ -1,7 +1,9 @@
 package com.jd.genie.config.filter;
 
+import com.jd.genie.config.GenieConfig;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +18,10 @@ import org.springframework.web.filter.CorsFilter;
  */
 @Configuration
 public class BaseFilterConfig {
+	
+	@Autowired
+	private GenieConfig genieConfig;
+	
 	public BaseFilterConfig() {
 	}
 
@@ -32,6 +38,24 @@ public class BaseFilterConfig {
         return this.creatAllFilter(corsFilter, 1);
 	}
 
+	/**
+	 * 创建TokenFilter实例
+	 */
+	@Bean
+	public TokenFilter tokenFilterBean() {
+		TokenFilter filter = new TokenFilter();
+		filter.setGenieConfig(genieConfig);
+		return filter;
+	}
+
+	/**
+	 * 注册Token鉴权过滤器
+	 * 优先级设置为2，确保在CORS过滤器之后执行
+	 */
+	@Bean
+	public FilterRegistrationBean<TokenFilter> tokenFilter() {
+		return this.creatAllFilter(tokenFilterBean(), 2);
+	}
 
 	<T extends Filter> FilterRegistrationBean<T> creatAllFilter(T filter, int order) {
 		return this.createFilter(filter, order, "/*");

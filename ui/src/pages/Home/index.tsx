@@ -3,8 +3,10 @@ import GeneralInput from "@/components/GeneralInput";
 import Slogn from "@/components/Slogn";
 import ChatView from "@/components/ChatView";
 import { productList, defaultProduct } from "@/utils/constants";
-import { Image } from "antd";
+import { Image, Button } from "antd";
+import { SettingOutlined } from "@ant-design/icons";
 import { demoList } from "@/utils/constants";
+import TokenSettings from "@/components/TokenSettings";
 
 type HomeProps = Record<string, never>;
 
@@ -15,6 +17,7 @@ const Home: GenieType.FC<HomeProps> = memo(() => {
   });
   const [product, setProduct] = useState(defaultProduct);
   const [videoModalOpen, setVideoModalOpen] = useState();
+  const [tokenSettingsVisible, setTokenSettingsVisible] = useState(false);
 
   const changeInputInfo = useCallback((info: CHAT.TInputInfo) => {
     setInputInfo(info);
@@ -115,8 +118,20 @@ const Home: GenieType.FC<HomeProps> = memo(() => {
   };
 
   return (
-    <div className="h-full flex flex-col items-center ">
+    <div className="h-full flex flex-col items-center relative">
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          type="text"
+          icon={<SettingOutlined />}
+          onClick={() => setTokenSettingsVisible(true)}
+          title="Token设置"
+        />
+      </div>
       {renderContent()}
+      <TokenSettings
+        visible={tokenSettingsVisible}
+        onClose={() => setTokenSettingsVisible(false)}
+      />
     </div>
   );
 });

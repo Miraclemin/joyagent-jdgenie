@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import { getUniqId, scrollToTop, ActionViewItemEnum, getSessionId } from "@/utils";
+import { getUniqId, scrollToTop, ActionViewItemEnum, getSessionId, showMessage } from "@/utils";
 import querySSE from "@/utils/querySSE";
 import {  handleTaskData, combineData } from "@/utils/chat";
 import Dialogue from "@/components/Dialogue";
@@ -10,6 +10,7 @@ import { useMemoizedFn } from "ahooks";
 import classNames from "classnames";
 import Logo from "../Logo";
 import { Modal } from "antd";
+import { hasToken } from "@/utils/token";
 
 type Props = {
   inputInfo: CHAT.TInputInfo;
@@ -22,6 +23,7 @@ const ChatView: GenieType.FC<Props> = (props) => {
   const [chatTitle, setChatTitle] = useState("");
   const [taskList, setTaskList] = useState<MESSAGE.Task[]>([]);
   const chatList = useRef<CHAT.ChatItem[]>([]);
+  const [chatListUpdate, setChatListUpdate] = useState(0); // 用于强制更新
   const [activeTask, setActiveTask] = useState<CHAT.Task>();
   const [plan, setPlan] = useState<CHAT.Plan>();
   const [showAction, setShowAction] = useState(false);
@@ -53,11 +55,21 @@ const ChatView: GenieType.FC<Props> = (props) => {
     };
   };
 
-  const sendMessage = useMemoizedFn((inputInfo: CHAT.TInputInfo) => {
+    const sendMessage = useMemoizedFn((inputInfo: CHAT.TInputInfo) => {
+    // 检查是否有token，如果没有则提示用户配置
+    if (!hasToken()) {
+      showMessage()?.error('请先配置 Token，点击右上角设置按钮进行配置');
+      return;
+    }
+
+    console.log('🚀 发送消息:', inputInfo);
     const {message, deepThink, outputStyle} = inputInfo;
     const requestId = getUniqId();
+    console.log('🚀 生成requestId:', requestId);
     let currentChat = combineCurrentChat(inputInfo, sessionId, requestId);
     chatList.current =  [...chatList.current, currentChat];
+    console.log('🚀 当前chat列表长度:', chatList.current.length);
+    setChatListUpdate(prev => prev + 1); // 触发UI更新
     if (!chatTitle) {
       setChatTitle(message!);
     }
@@ -69,6 +81,7 @@ const ChatView: GenieType.FC<Props> = (props) => {
       deepThink: deepThink ? 1 : 0,
       outputStyle
     };
+    console.log('🚀 请求参数:', params);
     const handleMessage = (data: MESSAGE.Answer) => {
       const { finished, resultMap, packageType, status } = data;
       if (status === "tokenUseUp") {
@@ -119,11 +132,49 @@ const ChatView: GenieType.FC<Props> = (props) => {
     };
 
     const handleError = (error: unknown) => {
-      throw error;
+      console.error('❌ ChatView SSE连接错误:', error);
+      console.error('❌ 错误类型:', typeof error);
+      console.error('❌ 错误详情:', error);
+      
+      // 显示错误提示
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.log('❌ 错误消息:', errorMessage);
+      
+      // 显示错误提示
+      showMessage()?.error(errorMessage || '请求失败，请稍后重试');
+      
+      // 重置loading状态
+      currentChat.loading = false;
+      currentChat.tip = `请求失败: ${errorMessage}`;
+      setLoading(false);
+      
+      // 更新chat列表
+      const newChatList = [...chatList.current];
+      const chatIndex = newChatList.findIndex(chat => chat.requestId === requestId);
+      if (chatIndex >= 0) {
+        newChatList[chatIndex] = currentChat;
+        chatList.current = newChatList;
+        // 强制更新UI
+        setChatListUpdate(prev => prev + 1);
+        console.log('✅ 已更新chat列表，当前列表长度:', newChatList.length);
+      } else {
+        console.warn('⚠️ 未找到对应的chat项，requestId:', requestId);
+      }
     };
 
     const handleClose = () => {
-      console.log('🚀 ~ close');
+      console.log('🚀 ~ SSE连接关闭');
+      // 如果还在loading状态，重置它
+      if (currentChat.loading) {
+        currentChat.loading = false;
+        setLoading(false);
+        const newChatList = [...chatList.current];
+        const chatIndex = newChatList.findIndex(chat => chat.requestId === requestId);
+        if (chatIndex >= 0) {
+          newChatList[chatIndex] = currentChat;
+          chatList.current = newChatList;
+        }
+      }
     };
 
     querySSE({

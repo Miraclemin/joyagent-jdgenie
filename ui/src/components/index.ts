@@ -12,6 +12,8 @@ export { default as Slogn } from './Slogn';
 
 export { default as AttachmentList } from './AttachmentList';
 
+export { default as TokenSettings } from './TokenSettings';
+
 export { GeneralInput, LoadingDot, Logo };
 
 export * from './PlanView';

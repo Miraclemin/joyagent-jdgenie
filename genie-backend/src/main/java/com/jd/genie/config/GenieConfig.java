@@ -252,5 +252,16 @@ public class GenieConfig {
     @Value("${autobots.autoagent.tool.task_complete_desc:当前task完成，请将当前task标记为 completed}")
     private String taskCompleteDesc;
 
+    /**
+     * API鉴权Token配置
+     * 如果配置了token，则所有API请求都需要在请求头中携带X-Auth-Token或参数中携带token
+     * 如果为空，则不进行token鉴权
+     */
+    @Value("${genie.auth.token:}")
+    private String authToken;
+
+    public String getAuthToken() {
+        return authToken;
+    }
 
 }
